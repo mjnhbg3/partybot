@@ -69,7 +69,7 @@ async def test_gemini_session_send_receive(monkeypatch):
 
     session = gs_mod.GeminiSession(api_key='k', model_id='m')
     await session.create()
-    send_task = asyncio.create_task(session._send_loop())
+    session.start_send_loop()
 
     outputs = []
 
@@ -87,6 +87,5 @@ async def test_gemini_session_send_receive(monkeypatch):
     assert outputs == [b'one', b'two']
 
     iter_task.cancel()
-    send_task.cancel()
     await session.close()
     assert fake.closed
