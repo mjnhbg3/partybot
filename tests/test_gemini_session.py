@@ -41,17 +41,24 @@ async def test_gemini_session_send_receive(monkeypatch):
     session = gs_mod.GeminiSession(api_key='k', model_id='m')
     await session.create()
     send_task = asyncio.create_task(session._send_loop())
-    iter_task = asyncio.create_task(session.iter_audio())
+
+    async def collect_audio(n=2):
+        out = []
+        async for chunk in session.iter_audio():
+            out.append(chunk)
+            if len(out) >= n:
+                break
+        return out
+
+    iter_task = asyncio.create_task(collect_audio())
 
     await session.send_pcm(b'data')
     await asyncio.sleep(0.01)
     assert fake.sent == [b'data']
 
-    out1 = await asyncio.wait_for(session.out_q.get(), timeout=1)
-    out2 = await asyncio.wait_for(session.out_q.get(), timeout=1)
-    assert out1 == b'one' and out2 == b'two'
+    results = await asyncio.wait_for(iter_task, timeout=1)
+    assert results == [b'one', b'two']
 
-    iter_task.cancel()
     send_task.cancel()
     await session.close()
     assert fake.closed

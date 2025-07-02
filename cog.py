@@ -101,8 +101,9 @@ class PartyBot(commands.Cog):
             bridge = DiscordBridge(vc)
 
             guild_config = await self.config.guild(ctx.guild).all()
+            api_key = self.bot.get_shared_api_tokens("google").get("api_key")
             gemini_session = GeminiSession(
-                api_key=await self.bot.get_shared_api_tokens("google").get("api_key"),
+                api_key=api_key,
                 model_id=guild_config["model_id"],
                 voice_name=guild_config["voice_name"],
                 cost_guard_usd=guild_config["cost_guard_usd"],
