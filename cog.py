@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 import discord
 from redbot.core import commands, Config
@@ -63,7 +62,9 @@ class PartyBot(commands.Cog):
     async def join(self, ctx: commands.Context):
         """Joins the voice channel you are in."""
         if not ctx.author.voice:
-            await ctx.send("You must be in a voice channel to use this command.")
+            await ctx.send(
+                "You must be in a voice channel to use this command."
+            )
             return
 
         channel = ctx.author.voice.channel
@@ -97,12 +98,16 @@ class PartyBot(commands.Cog):
     async def _voice_session(self, ctx: commands.Context):
         """The main voice session loop."""
         try:
-            vc = await ctx.author.voice.channel.connect(cls=discord.VoiceClient)
+            vc = await ctx.author.voice.channel.connect(
+                cls=discord.VoiceClient
+            )
             bridge = DiscordBridge(vc)
 
             guild_config = await self.config.guild(ctx.guild).all()
             gemini_session = GeminiSession(
-                api_key=await self.bot.get_shared_api_tokens("google").get("api_key"),
+                api_key=await self.bot.get_shared_api_tokens("google").get(
+                    "api_key"
+                ),
                 model_id=guild_config["model_id"],
                 voice_name=guild_config["voice_name"],
                 cost_guard_usd=guild_config["cost_guard_usd"],
@@ -114,7 +119,9 @@ class PartyBot(commands.Cog):
             vad = VAD()
 
             capture_task = asyncio.create_task(
-                self._capture_loop(bridge, gemini_session, mixer, vad, guild_config)
+                self._capture_loop(
+                    bridge, gemini_session, mixer, vad, guild_config
+                )
             )
             playback_task = asyncio.create_task(
                 self._playback_loop(bridge, gemini_session)
@@ -149,7 +156,8 @@ class PartyBot(commands.Cog):
             if chunk.size > 0:
                 chunk16 = downsample_48k_to_16k(chunk)
                 if vad.is_speech(
-                    chunk16.tobytes(), threshold=guild_config["silence_level_db"]
+                    chunk16.tobytes(),
+                    threshold=guild_config["silence_level_db"],
                 ):
                     await gemini_session.send_pcm(chunk16.tobytes())
 

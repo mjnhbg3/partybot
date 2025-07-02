@@ -14,13 +14,18 @@ class VAD:
             self._sample_rate * (self._frame_duration_ms / 1000.0) * 2
         )  # 16-bit PCM
 
-    def is_speech(self, frame: bytes, threshold: float = -float("inf")) -> bool:
-        """Returns True if the frame contains speech above the given threshold."""
+    def is_speech(
+        self, frame: bytes, threshold: float = -float("inf")
+    ) -> bool:
+        """Return True if the frame contains speech above the threshold."""
         if len(frame) != self._frame_size:
             raise ValueError(f"Frame must be {self._frame_size} bytes")
 
         if threshold > -float("inf"):
-            pcm = np.frombuffer(frame, dtype=np.int16).astype(np.float32) / 32768.0
+            pcm = (
+                np.frombuffer(frame, dtype=np.int16).astype(np.float32)
+                / 32768.0
+            )
             rms = np.sqrt(np.mean(pcm ** 2))
             level_db = -np.inf if rms == 0 else 20 * np.log10(rms)
             if level_db < threshold:

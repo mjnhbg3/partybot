@@ -1,5 +1,4 @@
 import asyncio
-import types
 
 import pytest
 
@@ -35,8 +34,12 @@ async def test_gemini_session_send_receive(monkeypatch):
     async def fake_live_session(**kwargs):
         return fake
 
-    monkeypatch.setattr(gs_mod.genai, 'configure', lambda api_key: None, raising=False)
-    monkeypatch.setattr(gs_mod.genai, 'live_session', fake_live_session, raising=False)
+    monkeypatch.setattr(
+        gs_mod.genai, 'configure', lambda api_key: None, raising=False
+    )
+    monkeypatch.setattr(
+        gs_mod.genai, 'live_session', fake_live_session, raising=False
+    )
 
     session = gs_mod.GeminiSession(api_key='k', model_id='m')
     await session.create()
