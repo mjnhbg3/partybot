@@ -25,12 +25,16 @@ class Mixer:
         if pcm.ndim == 1:
             if self._input_channels > 1:
                 if len(pcm) % self._input_channels != 0:
-                    raise ValueError("PCM length must be divisible by number of channels")
+                    raise ValueError(
+                        "PCM length must be divisible by number of channels"
+                    )
                 pcm = pcm.reshape(-1, self._input_channels)
             else:
                 pcm = pcm.reshape(-1, 1)
         elif pcm.shape[1] != self._input_channels:
-            raise ValueError("PCM data must have the same number of channels as the mixer")
+            raise ValueError(
+                "PCM data must have the same number of channels as the mixer"
+            )
         return pcm.mean(axis=1)
 
     def add(self, user_id: int, pcm_data: np.ndarray):
@@ -69,7 +73,10 @@ class Mixer:
             if parts:
                 user_mix = np.concatenate(parts)
                 if len(user_mix) < num_frames:
-                    user_mix = np.pad(user_mix, (0, num_frames - len(user_mix)))
+                    user_mix = np.pad(
+                        user_mix,
+                        (0, num_frames - len(user_mix)),
+                    )
                 mixed += user_mix
 
         mixed *= self._headroom
