@@ -1,10 +1,16 @@
 
+from __future__ import annotations
+
 import asyncio
 import io
 from typing import AsyncIterator, Tuple
 
 import discord
-import numpy as np
+
+try:
+    import numpy as np
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    np = None  # type: ignore[assignment]
 
 
 class _FrameReceiver(discord.sinks.Sink):
@@ -58,6 +64,8 @@ class DiscordBridge:
 
     def _to_float(self, pcm_data: bytes) -> np.ndarray:
         """Converts s16le PCM data to float32."""
+        if np is None:
+            raise ModuleNotFoundError("numpy is required for audio conversion")
         array = (
             np.frombuffer(pcm_data, dtype=np.int16).astype(
                 np.float32
@@ -67,6 +75,8 @@ class DiscordBridge:
 
     def _to_s16le(self, pcm_data: np.ndarray) -> bytes:
         """Converts float32 PCM data to stereo s16le."""
+        if np is None:
+            raise ModuleNotFoundError("numpy is required for audio conversion")
         if pcm_data.ndim == 1:
             pcm_data = pcm_data.reshape(-1, 1)
         if pcm_data.shape[1] == 1:

@@ -1,5 +1,11 @@
+from __future__ import annotations
+
 import webrtcvad
-import numpy as np
+
+try:
+    import numpy as np
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    np = None  # type: ignore[assignment]
 
 
 class VAD:
@@ -21,6 +27,8 @@ class VAD:
             raise ValueError(f"Frame must be {self._frame_size} bytes")
 
         if threshold > -float("inf"):
+            if np is None:
+                raise ModuleNotFoundError("numpy is required for threshold check")
             pcm = (
                 np.frombuffer(frame, dtype=np.int16).astype(np.float32)
                 / 32768.0

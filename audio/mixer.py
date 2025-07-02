@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 try:
     import numpy as np
 except ModuleNotFoundError:  # pragma: no cover - optional dependency
