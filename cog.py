@@ -95,7 +95,7 @@ class PartyBot(commands.Cog):
         await ctx.voice_client.disconnect()
         await ctx.send("Leaving the voice channel.")
 
-    async def _voice_session(self, ctx: commands.Context):
+    async def _voice_session(self, ctx: commands.Context) -> None:
         """The main voice session loop."""
         try:
             vc = await ctx.author.voice.channel.connect(
@@ -147,7 +147,7 @@ class PartyBot(commands.Cog):
         mixer: Mixer,
         vad: VAD,
         guild_config: dict,
-    ):
+    ) -> None:
         """The loop that captures audio from Discord and sends it to Gemini."""
         async for user_id, pcm48 in bridge.recv_frames():
             mixer.add(user_id, pcm48)
@@ -163,7 +163,7 @@ class PartyBot(commands.Cog):
 
     async def _playback_loop(
         self, bridge: DiscordBridge, gemini_session: GeminiSession
-    ):
+    ) -> None:
         """The loop that plays audio from Gemini back to Discord."""
         async for chunk24 in gemini_session.iter_audio():
             pcm48 = upsample_24k_to_48k(chunk24)
