@@ -1,4 +1,3 @@
-
 import asyncio
 from typing import Optional
 
@@ -35,6 +34,30 @@ class PartyBot(commands.Cog):
     async def partybot(self, ctx: commands.Context):
         """Manage the PartyBot."""
         pass
+
+    @partybot.command()
+    async def setmodel(self, ctx: commands.Context, model_id: str):
+        """Set the Gemini model ID for this guild."""
+        await self.config.guild(ctx.guild).model_id.set(model_id)
+        await ctx.send(f"Model set to `{model_id}`.")
+
+    @partybot.command(name="setsilence")
+    async def set_silence_level(self, ctx: commands.Context, level_db: int):
+        """Set the silence detection threshold in dB."""
+        await self.config.guild(ctx.guild).silence_level_db.set(level_db)
+        await ctx.send(f"Silence level set to {level_db} dB.")
+
+    @partybot.command(name="setvoice")
+    async def set_voice(self, ctx: commands.Context, voice_name: str):
+        """Set the voice name used for responses."""
+        await self.config.guild(ctx.guild).voice_name.set(voice_name)
+        await ctx.send(f"Voice name set to `{voice_name}`.")
+
+    @partybot.command(name="setcostguard")
+    async def set_cost_guard(self, ctx: commands.Context, dollars: float):
+        """Set the session cost guard in USD."""
+        await self.config.guild(ctx.guild).cost_guard_usd.set(dollars)
+        await ctx.send(f"Cost guard set to ${dollars:.2f}.")
 
     @partybot.command()
     async def join(self, ctx: commands.Context):
@@ -81,6 +104,8 @@ class PartyBot(commands.Cog):
             gemini_session = GeminiSession(
                 api_key=await self.bot.get_shared_api_tokens("google").get("api_key"),
                 model_id=guild_config["model_id"],
+                voice_name=guild_config["voice_name"],
+                cost_guard_usd=guild_config["cost_guard_usd"],
             )
             await gemini_session.create()
             gemini_session.start_send_loop()
@@ -88,8 +113,12 @@ class PartyBot(commands.Cog):
             mixer = Mixer(headroom_db=guild_config["mix_headroom_db"])
             vad = VAD()
 
-            capture_task = asyncio.create_task(self._capture_loop(bridge, gemini_session, mixer, vad, guild_config))
-            playback_task = asyncio.create_task(self._playback_loop(bridge, gemini_session))
+            capture_task = asyncio.create_task(
+                self._capture_loop(bridge, gemini_session, mixer, vad, guild_config)
+            )
+            playback_task = asyncio.create_task(
+                self._playback_loop(bridge, gemini_session)
+            )
 
             await asyncio.gather(capture_task, playback_task)
 
@@ -119,10 +148,14 @@ class PartyBot(commands.Cog):
             chunk = mixer.pop(guild_config["input_buffer_ms"])
             if chunk.size > 0:
                 chunk16 = downsample_48k_to_16k(chunk)
-                if vad.is_speech(chunk16.tobytes(), threshold=guild_config["silence_level_db"]):
+                if vad.is_speech(
+                    chunk16.tobytes(), threshold=guild_config["silence_level_db"]
+                ):
                     await gemini_session.send_pcm(chunk16.tobytes())
 
-    async def _playback_loop(self, bridge: DiscordBridge, gemini_session: GeminiSession):
+    async def _playback_loop(
+        self, bridge: DiscordBridge, gemini_session: GeminiSession
+    ):
         """The loop that plays audio from Gemini back to Discord."""
         async for chunk24 in gemini_session.iter_audio():
             pcm48 = upsample_24k_to_48k(chunk24)
