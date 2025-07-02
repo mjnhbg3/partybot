@@ -10,15 +10,11 @@ class Mixer:
         self,
         sample_rate: int = 48000,
         input_channels: int = 2,
-        channels: int | None = None,
         headroom_db: float = 6,
         buffer_ms: int = 1000,
     ):
         self._sample_rate = sample_rate
-        if channels is not None:
-            self._input_channels = channels
-        else:
-            self._input_channels = input_channels
+        self._input_channels = input_channels
         self._headroom = 10 ** (-headroom_db / 20)
         self._frame_capacity = int(self._sample_rate * (buffer_ms / 1000.0))
         self._buffers: Dict[int, deque[np.ndarray]] = {}
@@ -37,7 +33,7 @@ class Mixer:
             raise ValueError("PCM data must have the same number of channels as the mixer")
         return pcm.mean(axis=1)
 
-    def add(self, pcm_data: np.ndarray, user_id: int = 0):
+    def add(self, user_id: int, pcm_data: np.ndarray):
         """Adds PCM data from a user to the mixer."""
         mono = self._to_mono(pcm_data)
         if user_id not in self._buffers:
@@ -56,7 +52,6 @@ class Mixer:
             return np.zeros(0, dtype=np.float32)
 
         mixed = np.zeros(num_frames, dtype=np.float32)
-        any_data = False
         for dq in self._buffers.values():
             frames_needed = num_frames
             parts = []
@@ -76,10 +71,6 @@ class Mixer:
                 if len(user_mix) < num_frames:
                     user_mix = np.pad(user_mix, (0, num_frames - len(user_mix)))
                 mixed += user_mix
-                any_data = True
-
-        if not any_data:
-            return np.zeros(0, dtype=np.float32)
 
         mixed *= self._headroom
         np.clip(mixed, -1.0, 1.0, out=mixed)

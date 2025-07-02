@@ -96,12 +96,14 @@ class PartyBot(commands.Cog):
 
     async def _voice_session(self, ctx: commands.Context):
         """The main voice session loop."""
+        vc: Optional[discord.VoiceClient] = None
+        gemini_session: Optional[GeminiSession] = None
         try:
             vc = await ctx.author.voice.channel.connect(cls=discord.VoiceClient)
             bridge = DiscordBridge(vc)
 
             guild_config = await self.config.guild(ctx.guild).all()
-            # Retrieve the Gemini API key directly from shared tokens
+            # Get the Gemini API key from shared tokens without awaiting
             api_key = self.bot.get_shared_api_tokens("google").get("api_key")
             gemini_session = GeminiSession(
                 api_key=api_key,
@@ -130,9 +132,9 @@ class PartyBot(commands.Cog):
             self.logger.error(f"Error in voice session: {e}", exc_info=True)
             await ctx.send("An error occurred during the voice session.")
         finally:
-            if vc and vc.is_connected():
+            if vc is not None and vc.is_connected():
                 await vc.disconnect()
-            if gemini_session:
+            if gemini_session is not None:
                 await gemini_session.close()
 
     async def _capture_loop(

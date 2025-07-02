@@ -1,7 +1,26 @@
 import asyncio
 import types
+import sys
 
 import pytest
+
+# Provide a minimal stub for discord.sinks.Sink used in imports
+discord = sys.modules.setdefault('discord', types.ModuleType('discord'))
+if not hasattr(discord, 'sinks'):
+    sinks_mod = types.ModuleType('discord.sinks')
+
+    class Sink:
+        pass
+
+    class Filters:
+        @staticmethod
+        def container(func):
+            return func
+
+    sinks_mod.Sink = Sink
+    sinks_mod.core = types.SimpleNamespace(Filters=Filters(), AudioData=bytes)
+    discord.sinks = sinks_mod
+    sys.modules.setdefault('discord.sinks', sinks_mod)
 
 import partybot.stream.gemini_session as gs_mod
 
@@ -42,23 +61,22 @@ async def test_gemini_session_send_receive(monkeypatch):
     await session.create()
     send_task = asyncio.create_task(session._send_loop())
 
-    async def collect_audio(n=2):
-        out = []
-        async for chunk in session.iter_audio():
-            out.append(chunk)
-            if len(out) >= n:
-                break
-        return out
+    outputs = []
 
-    iter_task = asyncio.create_task(collect_audio())
+    async def run_iter():
+        async for chunk in session.iter_audio():
+            outputs.append(chunk)
+
+    iter_task = asyncio.create_task(run_iter())
 
     await session.send_pcm(b'data')
     await asyncio.sleep(0.01)
     assert fake.sent == [b'data']
 
-    results = await asyncio.wait_for(iter_task, timeout=1)
-    assert results == [b'one', b'two']
+    await asyncio.sleep(0.01)
+    assert outputs == [b'one', b'two']
 
+    iter_task.cancel()
     send_task.cancel()
     await session.close()
     assert fake.closed
