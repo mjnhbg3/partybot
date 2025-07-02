@@ -57,12 +57,13 @@ class DiscordBridge:
         pass
 
     def _to_float(self, pcm_data: bytes) -> np.ndarray:
-        """Converts s16le PCM data to float32."""
+        """Converts s16le PCM data to float32 while preserving channels."""
         array = (
-            np.frombuffer(pcm_data, dtype=np.int16).astype(np.float32)
-            / 32768.0
+            np.frombuffer(pcm_data, dtype=np.int16).astype(np.float32) / 32768.0
         )
-        return array.reshape(-1, 1)
+        # Discord/py-cord sends stereo frames by default. Reshape accordingly
+        # so that downstream components receive the original channel layout.
+        return array.reshape(-1, 2)
 
     def _to_s16le(self, pcm_data: np.ndarray) -> bytes:
         """Converts float32 PCM data to stereo s16le."""
