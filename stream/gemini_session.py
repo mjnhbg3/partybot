@@ -7,8 +7,8 @@ from partybot.utils.backpressure import BackpressureQueue
 class GeminiSession:
     """A wrapper around the Google Generative AI LiveSession."""
 
-    _INPUT_BYTE_COST = 1.0 / 1_000_000
-    _OUTPUT_BYTE_COST = 1.0 / 1_000_000
+    _INPUT_BYTE_COST = 3e-6
+    _OUTPUT_BYTE_COST = 12e-6
 
     def __init__(
         self,
