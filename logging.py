@@ -10,7 +10,9 @@ LOGGING_CONFIG: Dict[str, Any] = {
     "formatters": {
         "default": {
             "()": "colorlog.ColoredFormatter",
-            "format": "%(log_color)s%(levelname)-8s%(reset)s %(name)-20s %(message)s",
+            "format": (
+                "%(log_color)s%(levelname)-8s%(reset)s %(name)-20s %(message)s"
+            ),
             "log_colors": {
                 "DEBUG": "cyan",
                 "INFO": "green",
@@ -55,7 +57,8 @@ class UserIDFilter(logging.Filter):
 def setup_logging():
     """Sets up the logging configuration."""
     try:
-        import colorlog
+        from colorlog import ColoredFormatter  # type: ignore
+        LOGGING_CONFIG["formatters"]["default"]["()"] = ColoredFormatter
     except ImportError:
         # If colorlog is not installed, use a standard formatter
         LOGGING_CONFIG["formatters"]["default"] = {

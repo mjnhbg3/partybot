@@ -16,17 +16,20 @@ class _FrameReceiver(discord.sinks.Sink):
         self.queue: asyncio.Queue[Tuple[int, bytes]] = asyncio.Queue()
 
     @discord.sinks.core.Filters.container  # type: ignore[attr-defined]
-    def write(self, data: bytes, user: int):  # pragma: no cover - runs in thread
+    def write(self, data: bytes, user: int):
+        # pragma: no cover - runs in thread
         # Called in a separate thread by py-cord
         self.loop.call_soon_threadsafe(self.queue.put_nowait, (user, data))
 
-    def format_audio(self, audio: discord.sinks.core.AudioData):  # type: ignore
+    def format_audio(
+        self, audio: discord.sinks.core.AudioData
+    ):  # type: ignore
         # Override to avoid writing files
         pass
 
 
 class DiscordBridge:
-    """A bridge between Discord's voice client and the bot's audio processing pipeline."""
+    """Bridge Discord's voice client with the bot's audio pipeline."""
 
     def __init__(self, vc: discord.VoiceClient):
         self._vc = vc
@@ -42,7 +45,8 @@ class DiscordBridge:
     async def play_pcm(self, pcm_data: np.ndarray):
         """Plays PCM data to Discord."""
         if self._vc.is_playing():
-            # This is a simple approach. A more robust solution would be to queue the audio.
+            # This is a simple approach. A more robust solution would
+            # be to queue the audio.
             return
 
         pcm_bytes = self._to_s16le(pcm_data)
@@ -54,7 +58,10 @@ class DiscordBridge:
 
     def _to_float(self, pcm_data: bytes) -> np.ndarray:
         """Converts s16le PCM data to float32."""
-        array = np.frombuffer(pcm_data, dtype=np.int16).astype(np.float32) / 32768.0
+        array = (
+            np.frombuffer(pcm_data, dtype=np.int16).astype(np.float32)
+            / 32768.0
+        )
         return array.reshape(-1, 1)
 
     def _to_s16le(self, pcm_data: np.ndarray) -> bytes:

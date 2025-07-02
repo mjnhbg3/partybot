@@ -22,7 +22,7 @@ if not hasattr(discord, 'sinks'):
     discord.sinks = sinks_mod
     sys.modules.setdefault('discord.sinks', sinks_mod)
 
-import partybot.stream.gemini_session as gs_mod
+import partybot.stream.gemini_session as gs_mod  # noqa: E402
 
 
 class FakeChunk:
@@ -54,8 +54,18 @@ async def test_gemini_session_send_receive(monkeypatch):
     async def fake_live_session(**kwargs):
         return fake
 
-    monkeypatch.setattr(gs_mod.genai, 'configure', lambda api_key: None, raising=False)
-    monkeypatch.setattr(gs_mod.genai, 'live_session', fake_live_session, raising=False)
+    monkeypatch.setattr(
+        gs_mod.genai,
+        'configure',
+        lambda api_key: None,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        gs_mod.genai,
+        'live_session',
+        fake_live_session,
+        raising=False,
+    )
 
     session = gs_mod.GeminiSession(api_key='k', model_id='m')
     await session.create()
