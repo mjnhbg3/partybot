@@ -1,4 +1,9 @@
-import numpy as np
+import pytest
+
+try:
+    import numpy as np
+except ModuleNotFoundError:  # pragma: no cover - depends on environment
+    pytest.skip("numpy is required", allow_module_level=True)
 from partybot.audio.mixer import Mixer
 
 
