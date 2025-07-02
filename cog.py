@@ -8,7 +8,7 @@ from partybot.audio.resample import downsample_48k_to_16k, upsample_24k_to_48k
 from partybot.audio.vad import VAD
 from partybot.stream.gemini_session import GeminiSession
 from partybot.voice.discord_bridge import DiscordBridge
-from partybot.logging import get_logger
+from partybot.logutil import get_logger
 
 
 class PartyBot(commands.Cog):
