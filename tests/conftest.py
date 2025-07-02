@@ -93,3 +93,24 @@ if core and not hasattr(core, 'Config'):
                     return {}
             return Dummy()
     core.Config = DummyConfig
+
+# Provide basic stubs if optional audio libraries are missing
+if 'webrtcvad' not in sys.modules:
+    vad_mod = types.ModuleType('webrtcvad')
+
+    class Vad:
+        def is_speech(self, frame: bytes, sample_rate: int) -> bool:
+            return True
+
+    vad_mod.Vad = Vad
+    sys.modules['webrtcvad'] = vad_mod
+
+if 'soxr' not in sys.modules:
+    soxr_mod = types.ModuleType('soxr')
+
+    def resample(pcm, in_rate, out_rate, quality=None):
+        return pcm
+
+    soxr_mod.resample = resample
+    soxr_mod.FAST = None
+    sys.modules['soxr'] = soxr_mod
