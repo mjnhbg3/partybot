@@ -113,7 +113,7 @@ class PartyBot(commands.Cog):
     ):
         """The loop that captures audio from Discord and sends it to Gemini."""
         async for user_id, pcm48 in bridge.recv_frames():
-            mixer.add(pcm48)
+            mixer.add(user_id, pcm48)
 
             chunk = mixer.pop(guild_config["input_buffer_ms"])
             if chunk.size > 0:
