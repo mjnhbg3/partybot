@@ -101,6 +101,7 @@ class PartyBot(commands.Cog):
             bridge = DiscordBridge(vc)
 
             guild_config = await self.config.guild(ctx.guild).all()
+            # Retrieve the Gemini API key directly from shared tokens
             api_key = self.bot.get_shared_api_tokens("google").get("api_key")
             gemini_session = GeminiSession(
                 api_key=api_key,
