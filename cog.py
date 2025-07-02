@@ -83,6 +83,7 @@ class PartyBot(commands.Cog):
                 model_id=guild_config["model_id"],
             )
             await gemini_session.create()
+            gemini_session.start_send_loop()
 
             mixer = Mixer(headroom_db=guild_config["mix_headroom_db"])
             vad = VAD()

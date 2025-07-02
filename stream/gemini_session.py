@@ -1,5 +1,6 @@
 
 import asyncio
+import contextlib
 import google.generativeai as genai
 from partybot.utils.backpressure import BackpressureQueue
 
@@ -35,11 +36,25 @@ class GeminiSession:
             await self.in_q.put(pcm_data)
 
     async def iter_audio(self):
-        """Iterates over the audio from the LiveSession."""
-        if self._session:
+        """Yields audio bytes produced by the LiveSession."""
+        if not self._session:
+            return
+
+        async def _recv_loop():
             async for chunk in self._session.response_iter():
                 if chunk.audio:
                     await self.out_q.put(chunk.audio)
+
+        recv_task = asyncio.create_task(_recv_loop())
+
+        try:
+            while self._session:
+                chunk = await self.out_q.get()
+                yield chunk
+        finally:
+            recv_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await recv_task
 
     async def close(self):
         """Closes the LiveSession."""
