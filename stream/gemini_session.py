@@ -28,6 +28,7 @@ class GeminiSession:
         self._session = None
         self.in_q = BackpressureQueue(maxsize=100)  # 10 seconds of audio
         self.out_q = BackpressureQueue(maxsize=100)
+        self._send_task: asyncio.Task | None = None
 
     async def create(self):
         """Creates the LiveSession."""
@@ -78,6 +79,11 @@ class GeminiSession:
 
     async def close(self):
         """Closes the LiveSession."""
+        if self._send_task:
+            self._send_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._send_task
+            self._send_task = None
         if self._session:
             await self._session.close()
             self._session = None
@@ -91,7 +97,7 @@ class GeminiSession:
 
     def start_send_loop(self):
         """Starts the send loop."""
-        asyncio.create_task(self._send_loop())
+        self._send_task = asyncio.create_task(self._send_loop())
 
     async def _check_cost_guard(self):
         if self._cost_guard is None:
