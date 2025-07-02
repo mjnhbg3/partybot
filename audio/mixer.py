@@ -1,4 +1,7 @@
-import numpy as np
+try:
+    import numpy as np
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    np = None  # type: ignore[assignment]
 from collections import deque
 from typing import Dict
 
@@ -13,6 +16,8 @@ class Mixer:
         headroom_db: float = 6,
         buffer_ms: int = 1000,
     ):
+        if np is None:
+            raise ModuleNotFoundError("numpy is required for Mixer")
         self._sample_rate = sample_rate
         self._input_channels = input_channels
         self._headroom = 10 ** (-headroom_db / 20)
