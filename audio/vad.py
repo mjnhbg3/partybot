@@ -28,7 +28,9 @@ class VAD:
 
         if threshold > -float("inf"):
             if np is None:
-                raise ModuleNotFoundError("numpy is required for threshold check")
+                raise ModuleNotFoundError(
+                    "numpy is required for threshold check"
+                )
             pcm = (
                 np.frombuffer(frame, dtype=np.int16).astype(np.float32)
                 / 32768.0
