@@ -134,6 +134,11 @@ class PartyBot(commands.Cog):
 
         except asyncio.CancelledError:
             self.logger.info(f"Voice session in {ctx.guild.name} cancelled.")
+        except RuntimeError as e:
+            if "cost guard" in str(e):
+                await ctx.send("Session ended: cost guard exceeded.")
+            else:
+                raise
         except Exception as e:
             self.logger.error(f"Error in voice session: {e}", exc_info=True)
             await ctx.send("An error occurred during the voice session.")
