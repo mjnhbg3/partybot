@@ -1,10 +1,33 @@
 
 import asyncio
 import io
+import types
 from typing import AsyncIterator, Tuple
 
 import discord
 import numpy as np
+
+# Older versions of discord.py don't ship with the voice receiving "sinks"
+# module that py-cord provides.  When PartyBot is loaded in an environment
+# without ``discord.sinks`` we create a very small stub so the cog can load
+# gracefully.  The stub mimics the minimal API we rely on in this file.
+if not hasattr(discord, "sinks"):
+    class _DummySink:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def format_audio(self, *args, **kwargs):  # pragma: no cover - placeholder
+            pass
+
+    class _Filters:
+        @staticmethod
+        def container(func):
+            return func
+
+    discord.sinks = types.SimpleNamespace(
+        Sink=_DummySink,
+        core=types.SimpleNamespace(Filters=_Filters(), AudioData=bytes),
+    )
 
 
 class _FrameReceiver(discord.sinks.Sink):
