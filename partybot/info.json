@@ -3,7 +3,7 @@
   "install_msg": "Thanks for installing PartyBot! Use `[p]help PartyBot` to get started.",
   "name": "PartyBot",
   "short": "Real-time voice chat with Gemini.",
-  "description": "Provides low-latency voice chat in any Discord VC using Gemini 1.5 Flash.",
+  "description": "Provides low-latency voice chat in any Discord voice channel using Gemini 1.5 Flash.",
   "tags": ["voice", "gemini", "ai"],
   "requirements": [
     "py-cord>=2.6",
@@ -15,7 +15,8 @@
     "webrtcvad>=2.0",
     "soxr>=0.3"
   ],
-  "required_cogs": {},          // must exist even if empty
-  "min_bot_version": "3.5.0",   // or "3.4.17" etc. — whatever you need
+  "required_cogs": {},
+  "min_bot_version": "3.5.0",
   "end_user_data_statement": "This cog does not persistently store any user data."
 }
+
