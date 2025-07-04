@@ -1,0 +1,7 @@
+{
+  "name": "partybot-repo",
+  "description": "All PartyBot cogs",
+  "packages": [
+    "partybot"
+  ]
+}
