@@ -1,15 +1,14 @@
-
 """PartyBot package entry point."""
 
 from .logging import setup_logging
 
 
-def setup(bot):
+async def setup(bot):
+    """Async entry point used by Red to load the cog."""
     from .cog import PartyBot
 
-    bot.add_cog(PartyBot(bot))
+    await bot.add_cog(PartyBot(bot))
 
-
-setup_logging()
+    setup_logging()
 
 __all__ = ["PartyBot", "setup"]
