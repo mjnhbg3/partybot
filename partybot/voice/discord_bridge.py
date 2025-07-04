@@ -57,7 +57,13 @@ class DiscordBridge:
     def __init__(self, vc: discord.VoiceClient):
         self._vc = vc
         self._receiver = _FrameReceiver(vc.loop)
-        self._vc.start_recording(self._receiver, self._on_record_finish)
+        if hasattr(self._vc, "start_recording"):
+            # py-cord >=2.6 exposes start_recording for voice receiving
+            self._vc.start_recording(self._receiver, self._on_record_finish)
+        else:  # pragma: no cover - older discord.py without voice receiving
+            raise RuntimeError(
+                "PartyBot requires a VoiceClient with voice receiving support."
+            )
 
     async def recv_frames(self) -> AsyncIterator[Tuple[int, np.ndarray]]:
         """Receives audio frames from Discord."""
