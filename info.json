@@ -1,0 +1,9 @@
+{
+  "name": "partybot-repo",
+  "author": ["Gemini"],
+  "short": "Repository for PartyBot.",
+  "description": "Contains the PartyBot voice-chat cog.",
+  "install_msg": "Repository added – install with `[p]cog install partybot PartyBot`.",
+  "tags": ["voice", "gemini", "ai"],
+  "packages": ["partybot"]
+}
